@@ -1,4 +1,4 @@
-import { LinkedList } from "./LinkedList.js";
+import { LinkedList } from "./linkedlist.js";
 
 export class HashMap {
   constructor(initialCapacity = 16, loadFactor = 0.75) {
@@ -14,25 +14,19 @@ export class HashMap {
     const primeNumber = 31;
     for (let i = 0; i < key.length; i++) {
       hashCode = primeNumber * hashCode + key.charCodeAt(i);
-      hashCode = hashCode % this.buckets.length; // Apply modulo to prevent large number
     }
-    return hashCode;
+    return hashCode % this.buckets.length;
   }
 
   set(key, value) {
     const index = this.hash(key);
-    if (index < 0 || index >= this.buckets.length) {
-      throw new Error("Trying to access index out of bound");
-    }
-
     const bucket = this.buckets[index];
-    const node = { key, value };
-
     const existingNode = bucket.toArray().find((n) => n.key === key);
+
     if (existingNode) {
       existingNode.value = value;
     } else {
-      bucket.append(node);
+      bucket.append({ key, value });
       this.size++;
     }
 
@@ -43,10 +37,6 @@ export class HashMap {
 
   get(key) {
     const index = this.hash(key);
-    if (index < 0 || index >= this.buckets.length) {
-      throw new Error("Trying to access index out of bound");
-    }
-
     const bucket = this.buckets[index];
     const node = bucket.toArray().find((n) => n.key === key);
     return node ? node.value : null;
@@ -54,20 +44,12 @@ export class HashMap {
 
   has(key) {
     const index = this.hash(key);
-    if (index < 0 || index >= this.buckets.length) {
-      throw new Error("Trying to access index out of bound");
-    }
-
     const bucket = this.buckets[index];
     return bucket.find({ key });
   }
 
   remove(key) {
     const index = this.hash(key);
-    if (index < 0 || index >= this.buckets.length) {
-      throw new Error("Trying to access index out of bound");
-    }
-
     const bucket = this.buckets[index];
     const removed = bucket.remove({ key });
     if (removed) this.size--;
@@ -110,10 +92,7 @@ export class HashMap {
     this.buckets
       .flatMap((bucket) => bucket.toArray())
       .forEach((node) => {
-        const index = this.hash(node.key);
-        if (index < 0 || index >= newBuckets.length) {
-          throw new Error("Trying to access index out of bound");
-        }
+        const index = this.hash(node.key) % newBuckets.length;
         newBuckets[index].append(node);
       });
     this.buckets = newBuckets;
